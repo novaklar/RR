@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema R&R - Seguimiento de Asesoras</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Variables de colores según especificación */
+        :root {
+            --color-fondo: #f1efee;
+            --color-primario: #0d4c7f;
+            --color-secundario: #7fcfda;
+            --color-oscuro: #080a33;
+            --color-blanco: #ffffff;
+            --color-texto: #333333;
+            --color-texto-claro: #666666;
+            --color-exito: #2ecc71;
+            --color-advertencia: #f39c12;
+            --color-peligro: #e74c3c;
+            --color-info: #3498db;
+            --sombra-suave: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --sombra-mediana: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radio-borde: 12px;
+            --espaciado-xs: 8px;
+            --espaciado-sm: 12px;
+            --espaciado-md: 16px;
+            --espaciado-lg: 24px;
+            --espaciado-xl: 32px;
+        }
+
+        /* Reset y estilos base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            line-height: 1.5;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Encabezado de la aplicación - ACTUALIZADO */
+        .app-header {
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-secundario) 100%);
+            color: var(--color-blanco);
+            padding: var(--espaciado-lg) var(--espaciado-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--sombra-mediana);
+            text-align: center;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--espaciado-sm);
+            margin-bottom: 4px;
+        }
+
+        .app-title i {
+            color: var(--color-blanco);
+        }
+
+        .fecha-header {
+            font-size: 1rem;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        /* Contenido principal */
+        .app-main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--espaciado-md);
+            padding-bottom: 80px; /* Espacio para el menú inferior */
+        }
+
+        /* Sección de resumen general */
+        .resumen-section {
+            background-color: var(--color-blanco);
+            border-radius: var(--radio-borde);
+            padding: var(--espaciado-lg);
+            margin-bottom: var(--espaciado-lg);
+            box-shadow: var(--sombra-suave);
+        }
+
+        .resumen-title {
+            color: var(--color-primario);
+            font-size: 1.2rem;
+            margin-bottom: var(--espaciado-md);
+            display: flex;
+            align-items: center;
+            gap: var(--espaciado-sm);
+        }
+
+        .resumen-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--espaciado-md);
+            margin-bottom: var(--espaciado-lg);
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: var(--espaciado-sm);
+            border-radius: var(--radio-borde);
+            background-color: var(--color-fondo);
+            border-left: 4px solid var(--color-primario);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-primario);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--color-texto-claro);
+        }
+
+        /* Filtros y búsqueda */
+        .filtros-section {
+            background-color: var(--color-blanco);
+            border-radius: var(--radio-borde);
+            padding: var(--espaciado-md);
+            margin-bottom: var(--espaciado-lg);
+            box-shadow: var(--sombra-suave);
+        }
+
+        .filtros-row {
+            display: flex;
+            gap: var(--espaciado-sm);
+            margin-bottom: var(--espaciado-sm);
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--espaciado-sm) var(--espaciado-md) var(--espaciado-sm) 40px;
+            border: 1px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            background-color: var(--color-fondo);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: var(--espaciado-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-texto-claro);
+        }
+
+        .filter-select {
+            padding: var(--espaciado-sm) var(--espaciado-md);
+            border: 1px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            min-width: 140px;
+        }
+
+        /* Tarjetas de asesoras */
+        .asesoras-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--espaciado-md);
+        }
+
+        .asesora-card {
+            background-color: var(--color-blanco);
+            border-radius: var(--radio-borde);
+            padding: var(--espaciado-lg);
+            box-shadow: var(--sombra-suave);
+            border-left: 6px solid var(--color-primario);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .asesora-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--sombra-mediana);
+        }
+
+        .asesora-card.sin-registro-mes {
+            border-left-color: var(--color-peligro);
+            opacity: 0.9;
+        }
+
+        .asesora-card.registro-reciente {
+            border-left-color: var(--color-exito);
+        }
+
+        .asesora-card.registro-atrasado {
+            border-left-color: var(--color-advertencia);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--espaciado-md);
+        }
+
+        .asesora-info {
+            flex: 1;
+        }
+
+        .asesora-nombre {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--color-oscuro);
+            margin-bottom: 4px;
+        }
+
+        .asesora-detalle {
+            font-size: 0.9rem;
+            color: var(--color-texto-claro);
+            display: flex;
+            align-items: center;
+            gap: var(--espaciado-sm);
+        }
+
+        .estado-badge {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .estado-al-dia {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--color-exito);
+        }
+
+        .estado-retraso {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: var(--color-advertencia);
+        }
+
+        .estado-riesgo {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--color-peligro);
+        }
+
+        .estado-seguimiento {
+            background-color: rgba(52, 152, 219, 0.15);
+            color: var(--color-info);
+        }
+
+        .estado-sin-registro {
+            background-color: rgba(149, 165, 166, 0.15);
+            color: #95a5a6;
+        }
+
+        .card-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--espaciado-md);
+            margin-bottom: var(--espaciado-md);
+        }
+
+        .metric-box {
+            background-color: var(--color-fondo);
+            border-radius: 10px;
+            padding: var(--espaciado-sm);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primario);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--color-texto-claro);
+        }
+
+        .card-mensaje {
+            background-color: rgba(125, 207, 218, 0.1);
+            border-left: 4px solid var(--color-secundario);
+            padding: var(--espaciado-sm) var(--espaciado-md);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: var(--color-texto);
+            margin-top: var(--espaciado-sm);
+        }
+
+        .card-mensaje.sin-registro {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left-color: var(--color-peligro);
+        }
+
+        .card-mensaje.atrasado {
+            background-color: rgba(243, 156, 18, 0.1);
+            border-left-color: var(--color-advertencia);
+        }
+
+        /* Menú de navegación inferior */
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--color-blanco);
+            display: flex;
+            justify-content: space-around;
+            padding: var(--espaciado-sm) 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+            z-index: 200;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--espaciado-xs) var(--espaciado-sm);
+            color: var(--color-texto-claro);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+            flex: 1;
+            max-width: 100px;
+        }
+
+        .nav-item.active {
+            color: var(--color-primario);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        /* Estados de carga y error */
+        .cargando {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--espaciado-xl);
+            color: var(--color-texto-claro);
+        }
+
+        .error-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--espaciado-xl);
+            color: var(--color-peligro);
+            text-align: center;
+        }
+
+        .error-message i {
+            font-size: 3rem;
+            margin-bottom: var(--espaciado-md);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(13, 76, 127, 0.1);
+            border-left-color: var(--color-primario);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: var(--espaciado-md);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Botones de acción */
+        .action-button {
+            background-color: var(--color-primario);
+            color: white;
+            border: none;
+            padding: var(--espaciado-sm) var(--espaciado-md);
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--espaciado-sm);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-top: var(--espaciado-md);
+        }
+
+        .action-button:hover {
+            background-color: var(--color-oscuro);
+        }
+
+        /* Responsividad */
+        @media (max-width: 480px) {
+            html {
+                font-size: 14px;
+            }
+            
+            .card-content {
+                grid-template-columns: 1fr;
+                gap: var(--espaciado-sm);
+            }
+            
+            .resumen-stats {
+                gap: var(--espaciado-sm);
+            }
+            
+            .stat-card {
+                min-width: calc(50% - var(--espaciado-sm));
+            }
+            
+            .filtros-row {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+        }
+
+        /* Detalles de asesora (modal) - ACTUALIZADO */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: var(--espaciado-md);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: var(--color-blanco);
+            border-radius: var(--radio-borde);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--sombra-mediana);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: var(--espaciado-lg);
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-secundario) 100%);
+            color: var(--color-blanco);
+            border-radius: var(--radio-borde) var(--radio-borde) 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--color-blanco);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-modal:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: var(--espaciado-lg);
+        }
+
+        .actividad-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--espaciado-sm);
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .actividad-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--espaciado-sm);
+            border-radius: 8px;
+            background-color: var(--color-fondo);
+            border-left: 4px solid var(--color-secundario);
+        }
+
+        .actividad-fecha {
+            font-weight: 600;
+            color: var(--color-texto);
+            font-size: 0.95rem;
+        }
+
+        .actividad-detalle {
+            font-size: 0.85rem;
+            color: var(--color-texto-claro);
+        }
+
+        .actividad-estado {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .actividad-registrada {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--color-exito);
+        }
+
+        .actividad-falta {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--color-peligro);
+        }
+
+        .mes-actual {
+            display: inline-block;
+            background-color: rgba(13, 76, 127, 0.1);
+            color: var(--color-primario);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Scrollbar personalizado */
+        .actividad-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .actividad-list::-webkit-scrollbar-track {
+            background: var(--color-fondo);
+            border-radius: 3px;
+        }
+
+        .actividad-list::-webkit-scrollbar-thumb {
+            background: var(--color-secundario);
+            border-radius: 3px;
+        }
+
+        .actividad-list::-webkit-scrollbar-thumb:hover {
+            background: var(--color-primario);
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado de la aplicación - ACTUALIZADO -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="app-title"><i class="fas fa-hands-helping"></i> Sistema R&R</h1>
+            <div class="fecha-header" id="fecha-actual"></div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="app-main">
+        <!-- Resumen general -->
+        <section class="resumen-section">
+            <h2 class="resumen-title"><i class="fas fa-chart-line"></i> Resumen General</h2>
+            <div class="resumen-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-asesoras">3</div>
+                    <div class="stat-label">Total asesoras</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="asesoras-al-dia">0</div>
+                    <div class="stat-label">Al día</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="asesoras-retraso">0</div>
+                    <div class="stat-label">Con retraso</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="asesoras-sin-registro">3</div>
+                    <div class="stat-label">Sin registro</div>
+                </div>
+            </div>
+            <p id="resumen-texto">Monitoreando a 3 asesoras activas...</p>
+            <button class="action-button" id="btn-actualizar">
+                <i class="fas fa-sync-alt"></i> Actualizar datos ahora
+            </button>
+        </section>
+
+        <!-- Filtros y búsqueda -->
+        <section class="filtros-section">
+            <div class="filtros-row">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="buscar-asesora" placeholder="Buscar asesora...">
+                </div>
+                <select class="filter-select" id="filtro-estado">
+                    <option value="todas">Todas las asesoras</option>
+                    <option value="al-dia">Al día</option>
+                    <option value="retraso">Con retraso</option>
+                    <option value="sin-registro">Sin registro este mes</option>
+                </select>
+            </div>
+            <p class="app-subtitle" style="color: var(--color-texto-claro); margin-top: 8px;">
+                <i class="fas fa-info-circle"></i> Selecciona una asesora para ver su historial completo
+            </p>
+        </section>
+
+        <!-- Lista de asesoras -->
+        <section id="asesoras-section">
+            <div class="asesoras-container" id="lista-asesoras">
+                <!-- Las tarjetas de asesoras se cargarán aquí dinámicamente -->
+                <div class="cargando">
+                    <div class="spinner"></div>
+                    <p>Cargando datos reales desde Google Sheets...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Menú de navegación inferior -->
+    <nav class="nav-bottom">
+        <a href="#" class="nav-item active" data-page="inicio">
+            <i class="fas fa-home nav-icon"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-item" data-page="configuracion">
+            <i class="fas fa-cog nav-icon"></i>
+            <span>Ajustes</span>
+        </a>
+    </nav>
+
+    <!-- Modal para detalles de asesora - ACTUALIZADO -->
+    <div class="modal-overlay" id="modal-detalle">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-nombre">Detalles de Asesora</h2>
+                <button class="close-modal" id="cerrar-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="metric-box" style="margin-bottom: var(--espaciado-md);">
+                    <div class="metric-value" id="modal-dias-sin-registro">0</div>
+                    <div class="metric-label">Días sin registro</div>
+                </div>
+                <div id="ultimo-registro-info" style="margin-bottom: var(--espaciado-md);">
+                    <!-- Información del último registro se cargará aquí -->
+                </div>
+                <h3 style="margin-bottom: var(--espaciado-sm); color: var(--color-primario); display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-history"></i> Historial completo de registros
+                    <span id="total-registros" style="font-size: 0.9rem; background-color: var(--color-fondo); padding: 2px 8px; border-radius: 10px;">(0)</span>
+                </h3>
+                <div class="actividad-list" id="historial-actividad">
+                    <!-- Todos los registros de actividad se cargarán aquí -->
+                </div>
+                <div class="card-mensaje" id="modal-mensaje" style="margin-top: var(--espaciado-md);">
+                    <!-- El mensaje personalizado se cargará aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para cargar Google Visualization API -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <script>
+        // ID de la hoja de cálculo proporcionada
+        const SHEET_ID = '1D54c79yejujdFIJKVu4m3iM3ndUVnxP_fSgwSqGec5U';
+        const SHEET_NAME = 'Form Responses 1'; // Nombre por defecto del sheet
+        
+        // Variables globales
+        let datosAsesoras = [];
+        let datosOriginales = [];
+        let fechaActual = new Date();
+        let mesActual = fechaActual.getMonth();
+        let anioActual = fechaActual.getFullYear();
+        
+        // Nombres fijos de las 3 asesoras
+        const ASESORAS_FIJAS = [
+            { nombre: 'Alejandra', id: 'alejandra' },
+            { nombre: 'Danna', id: 'danna' },
+            { nombre: 'Tatiana', id: 'tatiana' }
+        ];
+        
+        // Formatear fecha para mostrar en el header
+        function formatearFechaHeader(fecha) {
+            const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            return fecha.toLocaleDateString('es-ES', opciones);
+        }
+        
+        // Formatear fecha para mostrar en el modal
+        function formatearFechaCompleta(fecha) {
+            const opciones = { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return fecha.toLocaleDateString('es-ES', opciones);
+        }
+        
+        // Obtener nombre del mes en español
+        function obtenerNombreMes(mes) {
+            const meses = [
+                'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+            ];
+            return meses[mes];
+        }
+        
+        // Obtener fecha en formato YYYY-MM-DD
+        function formatearFechaISO(fecha) {
+            return fecha.toISOString().split('T')[0];
+        }
+        
+        // Parsear timestamp de Google Sheets
+        function parsearTimestamp(timestamp) {
+            try {
+                const fecha = new Date(timestamp);
+                if (!isNaN(fecha.getTime())) {
+                    return fecha;
+                }
+                
+                const partes = timestamp.split(/[\s,/:-]+/);
+                if (partes.length >= 6) {
+                    return new Date(partes[0], partes[1]-1, partes[2], partes[3], partes[4], partes[5]);
+                }
+                
+                return new Date();
+            } catch (e) {
+                console.error('Error parseando fecha:', timestamp, e);
+                return new Date();
+            }
+        }
+        
+        // Calcular diferencia en días entre dos fechas
+        function diferenciaEnDias(fecha1, fecha2) {
+            const unDia = 24 * 60 * 60 * 1000;
+            return Math.floor(Math.abs((fecha1 - fecha2) / unDia));
+        }
+        
+        // Verificar si una fecha es del mes actual
+        function esDelMesActual(fecha) {
+            return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+        }
+        
+        // Obtener datos REALES de Google Sheets usando GVIZ
+        function obtenerDatosReales() {
+            mostrarEstadoCarga(true, 'Conectando con Google Sheets...');
+            
+            // Cargar la API de Google Visualization
+            google.charts.load('current', { 'packages': ['corechart'] });
+            google.charts.setOnLoadCallback(function() {
+                const query = new google.visualization.Query(
+                    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${SHEET_NAME}&headers=1`
+                );
+                
+                query.send(function(response) {
+                    if (response.isError()) {
+                        console.error('Error al obtener datos:', response.getMessage());
+                        mostrarError('No se pudo conectar con Google Sheets. Verifica la conexión.');
+                        return;
+                    }
+                    
+                    const data = response.getDataTable();
+                    const numFilas = data.getNumberOfRows();
+                    const numColumnas = data.getNumberOfColumns();
+                    
+                    console.log(`Datos obtenidos: ${numFilas} filas, ${numColumnas} columnas`);
+                    
+                    if (numFilas === 0) {
+                        console.log('No hay registros en la hoja, se mostrarán asesoras sin registro');
+                        procesarDatos([]);
+                        return;
+                    }
+                    
+                    // Procesar cada fila
+                    const registros = [];
+                    for (let fila = 0; fila < numFilas; fila++) {
+                        try {
+                            // Columna A: Timestamp
+                            const timestamp = data.getValue(fila, 0);
+                            const fechaRegistro = parsearTimestamp(timestamp);
+                            
+                            // Buscar nombre de asesora en las columnas
+                            let nombreAsesora = '';
+                            for (let col = 0; col < numColumnas; col++) {
+                                const valor = data.getValue(fila, col);
+                                if (valor && typeof valor === 'string') {
+                                    // Buscar coincidencias con nombres de asesoras
+                                    const nombreEncontrado = ASESORAS_FIJAS.find(asesora => 
+                                        valor.toLowerCase().includes(asesora.nombre.toLowerCase()) ||
+                                        valor.toLowerCase().includes(asesora.id.toLowerCase())
+                                    );
+                                    
+                                    if (nombreEncontrado) {
+                                        nombreAsesora = nombreEncontrado.nombre;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // Si no se encuentra nombre, intentar con columna L (índice 11)
+                            if (!nombreAsesora && numColumnas > 11) {
+                                const valorColumnaL = data.getValue(fila, 11);
+                                if (valorColumnaL && typeof valorColumnaL === 'string') {
+                                    nombreAsesora = valorColumnaL.trim();
+                                }
+                            }
+                            
+                            // Si todavía no hay nombre, saltar este registro
+                            if (!nombreAsesora || nombreAsesora.trim() === '') {
+                                continue;
+                            }
+                            
+                            registros.push({
+                                fecha: fechaRegistro,
+                                asesora: nombreAsesora.trim()
+                            });
+                            
+                        } catch (error) {
+                            console.error(`Error procesando fila ${fila}:`, error);
+                        }
+                    }
+                    
+                    console.log(`Registros procesados: ${registros.length}`);
+                    procesarDatos(registros);
+                });
+            });
+        }
+        
+        // Procesar datos para análisis
+        function procesarDatos(registros) {
+            const asesorasMap = {};
+            
+            // Inicializar las 3 asesoras fijas
+            ASESORAS_FIJAS.forEach(asesora => {
+                asesorasMap[asesora.nombre] = {
+                    nombre: asesora.nombre,
+                    registros: [],
+                    ultimaFecha: null,
+                    tieneRegistroMesActual: false,
+                    registrosMesActual: 0
+                };
+            });
+            
+            // Procesar registros reales
+            registros.forEach(registro => {
+                const nombreAsesora = registro.asesora;
+                
+                // Solo procesar si es una de nuestras asesoras fijas
+                if (asesorasMap[nombreAsesora]) {
+                    asesorasMap[nombreAsesora].registros.push({
+                        fecha: registro.fecha,
+                        fechaStr: formatearFechaISO(registro.fecha)
+                    });
+                    
+                    // Actualizar última fecha
+                    if (!asesorasMap[nombreAsesora].ultimaFecha || 
+                        registro.fecha > asesorasMap[nombreAsesora].ultimaFecha) {
+                        asesorasMap[nombreAsesora].ultimaFecha = registro.fecha;
+                    }
+                    
+                    // Verificar si es del mes actual
+                    if (esDelMesActual(registro.fecha)) {
+                        asesorasMap[nombreAsesora].tieneRegistroMesActual = true;
+                        asesorasMap[nombreAsesora].registrosMesActual++;
+                    }
+                }
+            });
+            
+            // Convertir mapa a array y calcular métricas adicionales
+            const asesorasArray = Object.values(asesorasMap).map(asesora => {
+                const registrosOrdenados = [...asesora.registros].sort((a, b) => b.fecha - a.fecha);
+                const ultimoRegistro = registrosOrdenados[0];
+                
+                // Calcular días desde último registro
+                let diasDesdeUltimoRegistro = null;
+                let mensaje = '';
+                let estado = '';
+                let claseEstado = '';
+                let claseTarjeta = '';
+                let claseMensaje = '';
+                
+                if (asesora.ultimaFecha) {
+                    diasDesdeUltimoRegistro = diferenciaEnDias(fechaActual, asesora.ultimaFecha);
+                    
+                    // Verificar si el último registro es del mes actual
+                    if (esDelMesActual(asesora.ultimaFecha)) {
+                        if (diasDesdeUltimoRegistro === 0) {
+                            estado = 'al-dia';
+                            claseEstado = 'estado-al-dia';
+                            claseTarjeta = 'registro-reciente';
+                            mensaje = `${asesora.nombre} realizó registro hoy. ¡Excelente!`;
+                        } else if (diasDesdeUltimoRegistro === 1) {
+                            estado = 'retraso';
+                            claseEstado = 'estado-retraso';
+                            claseTarjeta = 'registro-atrasado';
+                            claseMensaje = 'atrasado';
+                            mensaje = `${asesora.nombre} no registró ayer. Último registro hace ${diasDesdeUltimoRegistro} día.`;
+                        } else if (diasDesdeUltimoRegistro <= 3) {
+                            estado = 'retraso';
+                            claseEstado = 'estado-retraso';
+                            claseTarjeta = 'registro-atrasado';
+                            claseMensaje = 'atrasado';
+                            mensaje = `${asesora.nombre} no hace registro desde el ${asesora.ultimaFecha.getDate()} de ${obtenerNombreMes(asesora.ultimaFecha.getMonth())}.`;
+                        } else {
+                            estado = 'riesgo';
+                            claseEstado = 'estado-riesgo';
+                            claseTarjeta = 'registro-atrasado';
+                            claseMensaje = 'sin-registro';
+                            mensaje = `${asesora.nombre} no hace registro desde el ${asesora.ultimaFecha.getDate()} de ${obtenerNombreMes(asesora.ultimaFecha.getMonth())}.`;
+                        }
+                    } else {
+                        // Último registro no es del mes actual
+                        estado = 'sin-registro';
+                        claseEstado = 'estado-sin-registro';
+                        claseTarjeta = 'sin-registro-mes';
+                        claseMensaje = 'sin-registro';
+                        mensaje = `${asesora.nombre} no tiene registros en ${obtenerNombreMes(mesActual)}. Último registro: ${asesora.ultimaFecha.getDate()} de ${obtenerNombreMes(asesora.ultimaFecha.getMonth())}.`;
+                    }
+                } else {
+                    // Sin ningún registro
+                    estado = 'sin-registro';
+                    claseEstado = 'estado-sin-registro';
+                    claseTarjeta = 'sin-registro-mes';
+                    claseMensaje = 'sin-registro';
+                    mensaje = `${asesora.nombre} no tiene registros en el sistema.`;
+                    diasDesdeUltimoRegistro = null;
+                }
+                
+                return {
+                    ...asesora,
+                    registrosOrdenados: registrosOrdenados,
+                    diasDesdeUltimoRegistro: diasDesdeUltimoRegistro,
+                    estado: estado,
+                    claseEstado: claseEstado,
+                    claseTarjeta: claseTarjeta,
+                    claseMensaje: claseMensaje,
+                    mensaje: mensaje
+                };
+            });
+            
+            // Ordenar: primero las que tienen registro reciente, luego las atrasadas, luego sin registro
+            asesorasArray.sort((a, b) => {
+                const ordenEstado = { 'al-dia': 0, 'retraso': 1, 'riesgo': 2, 'sin-registro': 3 };
+                return ordenEstado[a.estado] - ordenEstado[b.estado];
+            });
+            
+            datosOriginales = asesorasArray;
+            datosAsesoras = [...asesorasArray];
+            
+            mostrarEstadoCarga(false);
+            renderizarAsesoras(datosAsesoras);
+            actualizarResumen(datosAsesoras);
+        }
+        
+        // Mostrar/ocultar estado de carga
+        function mostrarEstadoCarga(mostrar, mensaje = '') {
+            const contenedor = document.getElementById('lista-asesoras');
+            
+            if (mostrar) {
+                contenedor.innerHTML = `
+                    <div class="cargando">
+                        <div class="spinner"></div>
+                        <p>${mensaje}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Mostrar error
+        function mostrarError(mensaje) {
+            const contenedor = document.getElementById('lista-asesoras');
+            contenedor.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>${mensaje}</p>
+                    <button class="action-button" id="btn-reintentar">
+                        <i class="fas fa-redo"></i> Reintentar conexión
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('btn-reintentar').addEventListener('click', obtenerDatosReales);
+        }
+        
+        // Renderizar tarjetas de asesoras
+        function renderizarAsesoras(asesoras) {
+            const contenedor = document.getElementById('lista-asesoras');
+            
+            if (asesoras.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="cargando">
+                        <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--color-texto-claro); margin-bottom: var(--espaciado-md);"></i>
+                        <p>No se encontraron asesoras con los filtros aplicados</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            contenedor.innerHTML = '';
+            
+            asesoras.forEach(asesora => {
+                const tarjeta = document.createElement('div');
+                tarjeta.className = `asesora-card ${asesora.claseTarjeta}`;
+                tarjeta.dataset.nombre = asesora.nombre;
+                
+                let textoEstado = '';
+                switch(asesora.estado) {
+                    case 'al-dia': textoEstado = 'Al día'; break;
+                    case 'retraso': textoEstado = 'Con retraso'; break;
+                    case 'riesgo': textoEstado = 'En riesgo'; break;
+                    case 'sin-registro': textoEstado = 'Sin registro'; break;
+                }
+                
+                let ultimaFechaTexto = asesora.ultimaFecha ? 
+                    asesora.ultimaFecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 
+                    'Sin registros';
+                
+                let diasSinRegistroTexto = asesora.diasDesdeUltimoRegistro !== null ? 
+                    asesora.diasDesdeUltimoRegistro : 
+                    'N/A';
+                
+                tarjeta.innerHTML = `
+                    <div class="card-header">
+                        <div class="asesora-info">
+                            <div class="asesora-nombre">${asesora.nombre}</div>
+                            <div class="asesora-detalle">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>Último: ${ultimaFechaTexto}</span>
+                            </div>
+                            <div class="mes-actual">${obtenerNombreMes(mesActual)} ${anioActual}</div>
+                        </div>
+                        <div class="estado-badge ${asesora.claseEstado}">${textoEstado}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric-box">
+                            <div class="metric-value">${asesora.registrosMesActual}</div>
+                            <div class="metric-label">Registros este mes</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-value">${diasSinRegistroTexto}</div>
+                            <div class="metric-label">Días sin registrar</div>
+                        </div>
+                    </div>
+                    <div class="card-mensaje ${asesora.claseMensaje}">
+                        ${asesora.mensaje}
+                    </div>
+                `;
+                
+                // Agregar evento de clic para abrir el modal
+                tarjeta.addEventListener('click', () => abrirModalDetalle(asesora));
+                
+                contenedor.appendChild(tarjeta);
+            });
+        }
+        
+        // Actualizar resumen general
+        function actualizarResumen(asesoras) {
+            const totalAsesoras = asesoras.length;
+            const asesorasAlDia = asesoras.filter(a => a.estado === 'al-dia').length;
+            const asesorasRetraso = asesoras.filter(a => a.estado === 'retraso' || a.estado === 'riesgo').length;
+            const asesorasSinRegistro = asesoras.filter(a => a.estado === 'sin-registro').length;
+            
+            document.getElementById('total-asesoras').textContent = totalAsesoras;
+            document.getElementById('asesoras-al-dia').textContent = asesorasAlDia;
+            document.getElementById('asesoras-retraso').textContent = asesorasRetraso;
+            document.getElementById('asesoras-sin-registro').textContent = asesorasSinRegistro;
+            
+            // Generar texto de resumen
+            let textoResumen = '';
+            if (asesorasAlDia === totalAsesoras) {
+                textoResumen = '¡Todas las asesoras están al día con sus registros!';
+            } else if (asesorasSinRegistro > 0) {
+                textoResumen = `${asesorasSinRegistro} asesora(s) sin registro en ${obtenerNombreMes(mesActual)}.`;
+            } else if (asesorasRetraso > 0) {
+                textoResumen = `${asesorasRetraso} asesora(s) presentan retraso en sus registros.`;
+            } else {
+                textoResumen = `${asesorasAlDia} de ${totalAsesoras} asesoras están al día.`;
+            }
+            
+            document.getElementById('resumen-texto').textContent = textoResumen;
+        }
+        
+        // Filtrar asesoras según búsqueda y filtro
+        function filtrarAsesoras() {
+            const textoBusqueda = document.getElementById('buscar-asesora').value.toLowerCase();
+            const filtroEstado = document.getElementById('filtro-estado').value;
+            
+            let asesorasFiltradas = datosOriginales;
+            
+            // Aplicar filtro de búsqueda
+            if (textoBusqueda) {
+                asesorasFiltradas = asesorasFiltradas.filter(a => 
+                    a.nombre.toLowerCase().includes(textoBusqueda)
+                );
+            }
+            
+            // Aplicar filtro de estado
+            if (filtroEstado !== 'todas') {
+                if (filtroEstado === 'sin-registro') {
+                    asesorasFiltradas = asesorasFiltradas.filter(a => a.estado === 'sin-registro');
+                } else if (filtroEstado === 'retraso') {
+                    asesorasFiltradas = asesorasFiltradas.filter(a => a.estado === 'retraso' || a.estado === 'riesgo');
+                } else {
+                    asesorasFiltradas = asesorasFiltradas.filter(a => a.estado === filtroEstado);
+                }
+            }
+            
+            // Ordenar: primero las que necesitan más atención
+            asesorasFiltradas.sort((a, b) => {
+                const ordenEstado = { 'sin-registro': 0, 'riesgo': 1, 'retraso': 2, 'al-dia': 3 };
+                return ordenEstado[a.estado] - ordenEstado[b.estado];
+            });
+            
+            datosAsesoras = asesorasFiltradas;
+            renderizarAsesoras(datosAsesoras);
+            actualizarResumen(datosAsesoras);
+        }
+        
+        // Abrir modal con detalles de asesora - ACTUALIZADO
+        function abrirModalDetalle(asesora) {
+            document.getElementById('modal-nombre').textContent = asesora.nombre;
+            
+            // Mostrar días sin registro
+            const diasSinRegistro = asesora.diasDesdeUltimoRegistro !== null ? 
+                asesora.diasDesdeUltimoRegistro : 'Sin registros';
+            document.getElementById('modal-dias-sin-registro').textContent = diasSinRegistro;
+            
+            // Información del último registro
+            const ultimoRegistroInfo = document.getElementById('ultimo-registro-info');
+            if (asesora.ultimaFecha) {
+                ultimoRegistroInfo.innerHTML = `
+                    <div style="background-color: var(--color-fondo); padding: var(--espaciado-sm); border-radius: 10px; margin-bottom: var(--espaciado-md);">
+                        <div style="font-weight: 600; color: var(--color-primario); margin-bottom: 4px;">Último registro</div>
+                        <div>${formatearFechaCompleta(asesora.ultimaFecha)}</div>
+                        ${asesora.tieneRegistroMesActual ? 
+                            `<div style="color: var(--color-exito); font-size: 0.9rem; margin-top: 4px;">
+                                <i class="fas fa-check-circle"></i> Tiene registro en ${obtenerNombreMes(mesActual)}
+                            </div>` :
+                            `<div style="color: var(--color-peligro); font-size: 0.9rem; margin-top: 4px;">
+                                <i class="fas fa-exclamation-circle"></i> Sin registro en ${obtenerNombreMes(mesActual)}
+                            </div>`
+                        }
+                    </div>
+                `;
+            } else {
+                ultimoRegistroInfo.innerHTML = `
+                    <div style="background-color: var(--color-fondo); padding: var(--espaciado-sm); border-radius: 10px; margin-bottom: var(--espaciado-md);">
+                        <div style="font-weight: 600; color: var(--color-primario); margin-bottom: 4px;">Último registro</div>
+                        <div>No hay registros en el sistema</div>
+                    </div>
+                `;
+            }
+            
+            // Generar historial completo de actividad
+            const historialContenedor = document.getElementById('historial-actividad');
+            historialContenedor.innerHTML = '';
+            
+            // Actualizar contador de registros
+            document.getElementById('total-registros').textContent = `(${asesora.registros.length})`;
+            
+            // Si no hay registros, mostrar mensaje
+            if (asesora.registros.length === 0) {
+                historialContenedor.innerHTML = `
+                    <div style="text-align: center; padding: var(--espaciado-md); color: var(--color-texto-claro);">
+                        <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: var(--espaciado-sm);"></i>
+                        <p>No hay registros de actividad</p>
+                    </div>
+                `;
+            } else {
+                // Mostrar TODOS los registros ordenados del más reciente al más antiguo
+                asesora.registrosOrdenados.forEach((registro, index) => {
+                    const fecha = registro.fecha;
+                    const fechaFormateada = fecha.toLocaleDateString('es-ES', { 
+                        weekday: 'short', 
+                        day: 'numeric', 
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Determinar si el registro es del mes actual
+                    const esMesActual = esDelMesActual(fecha);
+                    const esHoy = diferenciaEnDias(fecha, fechaActual) === 0;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'actividad-item';
+                    
+                    // Destacar el último registro
+                    if (index === 0) {
+                        item.style.borderLeft = '4px solid var(--color-exito)';
+                        item.style.backgroundColor = 'rgba(46, 204, 113, 0.05)';
+                    }
+                    
+                    item.innerHTML = `
+                        <div>
+                            <div class="actividad-fecha">${fechaFormateada}</div>
+                            <div class="actividad-detalle">
+                                ${esHoy ? '<i class="fas fa-bolt" style="color: var(--color-advertencia); margin-right: 4px;"></i> Hoy' : 
+                                  esMesActual ? `<i class="fas fa-check" style="color: var(--color-exito); margin-right: 4px;"></i> ${obtenerNombreMes(fecha.getMonth())}` :
+                                  `<i class="fas fa-calendar-alt" style="color: var(--color-texto-claro); margin-right: 4px;"></i> ${obtenerNombreMes(fecha.getMonth())} ${fecha.getFullYear()}`
+                                }
+                            </div>
+                        </div>
+                        <div class="actividad-estado actividad-registrada">
+                            ${index === 0 ? 'ÚLTIMO' : 'Registró'}
+                        </div>
+                    `;
+                    
+                    historialContenedor.appendChild(item);
+                });
+            }
+            
+            document.getElementById('modal-mensaje').textContent = asesora.mensaje;
+            
+            // Mostrar modal
+            document.getElementById('modal-detalle').classList.add('active');
+        }
+        
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('modal-detalle').classList.remove('active');
+        }
+        
+        // Inicializar la aplicación
+        function inicializarApp() {
+            // Actualizar fecha actual en el header
+            document.getElementById('fecha-actual').textContent = formatearFechaHeader(fechaActual);
+            
+            // Configurar eventos
+            document.getElementById('buscar-asesora').addEventListener('input', filtrarAsesoras);
+            document.getElementById('filtro-estado').addEventListener('change', filtrarAsesoras);
+            document.getElementById('cerrar-modal').addEventListener('click', cerrarModal);
+            document.getElementById('btn-actualizar').addEventListener('click', obtenerDatosReales);
+            
+            document.getElementById('modal-detalle').addEventListener('click', function(e) {
+                if (e.target === this) cerrarModal();
+            });
+            
+            // Configurar navegación inferior
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Actualizar estado activo
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Cargar datos iniciales
+            obtenerDatosReales();
+            
+            // Configurar actualización automática cada 5 minutos
+            setInterval(obtenerDatosReales, 5 * 60 * 1000);
+        }
+        
+        // Iniciar la aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', inicializarApp);
+        
+        // Manejar errores globales
+        window.addEventListener('error', function(e) {
+            console.error('Error global:', e.error);
+            mostrarError('Ocurrió un error inesperado. Por favor, recarga la página.');
+        });
+    </script>
+</body>
+</html>
