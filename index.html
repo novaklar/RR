@@ -97,7 +97,7 @@
             max-width: 800px;
             margin: 0 auto;
             padding: var(--espaciado-md);
-            padding-bottom: 80px; /* Espacio para el menú inferior */
+            /* ELIMINADO: padding-bottom: 80px; - Ya no es necesario el espacio para el menú inferior */
         }
 
         /* Sección de resumen general */
@@ -334,41 +334,23 @@
             border-left-color: var(--color-advertencia);
         }
 
-        /* Menú de navegación inferior */
+        /* Menú de navegación inferior - ELIMINADO
         .nav-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--color-blanco);
-            display: flex;
-            justify-content: space-around;
-            padding: var(--espaciado-sm) 0;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
-            z-index: 200;
+            ...
         }
-
+        
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: var(--espaciado-xs) var(--espaciado-sm);
-            color: var(--color-texto-claro);
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: color 0.2s;
-            flex: 1;
-            max-width: 100px;
+            ...
         }
 
         .nav-item.active {
-            color: var(--color-primario);
+            ...
         }
 
         .nav-icon {
-            font-size: 1.2rem;
-            margin-bottom: 4px;
+            ...
         }
+        */
 
         /* Estados de carga y error */
         .cargando {
@@ -615,7 +597,6 @@
     </style>
 </head>
 <body>
-    <!-- Encabezado de la aplicación - ACTUALIZADO -->
     <header class="app-header">
         <div class="header-content">
             <h1 class="app-title"><i class="fas fa-hands-helping"></i> Sistema R&R</h1>
@@ -623,9 +604,7 @@
         </div>
     </header>
 
-    <!-- Contenido principal -->
     <main class="app-main">
-        <!-- Resumen general -->
         <section class="resumen-section">
             <h2 class="resumen-title"><i class="fas fa-chart-line"></i> Resumen General</h2>
             <div class="resumen-stats">
@@ -652,7 +631,6 @@
             </button>
         </section>
 
-        <!-- Filtros y búsqueda -->
         <section class="filtros-section">
             <div class="filtros-row">
                 <div class="search-box">
@@ -671,10 +649,8 @@
             </p>
         </section>
 
-        <!-- Lista de asesoras -->
         <section id="asesoras-section">
             <div class="asesoras-container" id="lista-asesoras">
-                <!-- Las tarjetas de asesoras se cargarán aquí dinámicamente -->
                 <div class="cargando">
                     <div class="spinner"></div>
                     <p>Cargando datos reales desde Google Sheets...</p>
@@ -683,19 +659,6 @@
         </section>
     </main>
 
-    <!-- Menú de navegación inferior -->
-    <nav class="nav-bottom">
-        <a href="#" class="nav-item active" data-page="inicio">
-            <i class="fas fa-home nav-icon"></i>
-            <span>Inicio</span>
-        </a>
-        <a href="#" class="nav-item" data-page="configuracion">
-            <i class="fas fa-cog nav-icon"></i>
-            <span>Ajustes</span>
-        </a>
-    </nav>
-
-    <!-- Modal para detalles de asesora - ACTUALIZADO -->
     <div class="modal-overlay" id="modal-detalle">
         <div class="modal">
             <div class="modal-header">
@@ -708,23 +671,19 @@
                     <div class="metric-label">Días sin registro</div>
                 </div>
                 <div id="ultimo-registro-info" style="margin-bottom: var(--espaciado-md);">
-                    <!-- Información del último registro se cargará aquí -->
-                </div>
+                    </div>
                 <h3 style="margin-bottom: var(--espaciado-sm); color: var(--color-primario); display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-history"></i> Historial completo de registros
                     <span id="total-registros" style="font-size: 0.9rem; background-color: var(--color-fondo); padding: 2px 8px; border-radius: 10px;">(0)</span>
                 </h3>
                 <div class="actividad-list" id="historial-actividad">
-                    <!-- Todos los registros de actividad se cargarán aquí -->
-                </div>
+                    </div>
                 <div class="card-mensaje" id="modal-mensaje" style="margin-top: var(--espaciado-md);">
-                    <!-- El mensaje personalizado se cargará aquí -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
 
-    <!-- Script para cargar Google Visualization API -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
     <script>
@@ -1306,7 +1265,7 @@
                 if (e.target === this) cerrarModal();
             });
             
-            // Configurar navegación inferior
+            /* CÓDIGO ELIMINADO: Se remueve la configuración de eventos para la navegación inferior
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1316,6 +1275,7 @@
                     this.classList.add('active');
                 });
             });
+            */
             
             // Cargar datos iniciales
             obtenerDatosReales();
@@ -1335,3 +1295,4 @@
     </script>
 </body>
 </html>
+
